@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffe6f2;
+            color: #4a4a4a;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 2.5rem;
+            color: #d63384;
+        }
+        form {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffd6e7;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select, button {
+            margin: 10px 0 15px;
+        }
+        input[type="range"] {
+            width: 80%;
+        }
+        button {
+            background: linear-gradient(45deg, #d63384, #ff77a9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+        }
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .results {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .results img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .results p {
+            font-size: 1rem;
+            color: #6d6d6d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Search</h1>
+    <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <label for="text_query">Text Query:</label>
+        <input type="text" id="text_query" name="text_query">
+
+        <label for="image_query">Image Query:</label>
+        <input type="file" id="image_query" name="image_query">
+
+        <label for="query_type">Query Type:</label>
+        <select id="query_type" name="query_type" onchange="toggleTextWeight(this.value)">
+            <option value="text">Text Query</option>
+            <option value="image">Image Query</option>
+            <option value="hybrid">Hybrid Query</option>
+        </select>
+
+        <div id="text_weight_container" style="display: none;">
+            <label for="text_weight">Text Weight (0.0 - 1.0):</label>
+            <input type="range" id="text_weight" name="text_weight" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <label for="use_pca">
+            <input type="checkbox" id="use_pca" name="use_pca"> Use PCA
+        </label>
+
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    {% if results %}
+    <div class="results">
+        <h2>Top Results</h2>
+        {% for fname, score in results %}
+        <div>
+            <img src="/coco_images_resized/{{ fname }}" alt="Result Image">
+            <p>Similarity: {{ "%.3f" | format(score) }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        function toggleTextWeight(queryType) {
+            document.getElementById('text_weight_container').style.display = queryType === 'hybrid' ? 'block' : 'none';
+        }
+        function validateForm() {
+            const queryType = document.getElementById('query_type').value;
+            const textQuery = document.getElementById('text_query').value.trim();
+            const imageQuery = document.getElementById('image_query').value;
+
+            if (queryType === "text" && !textQuery) {
+                alert("Please enter a text query.");
+                return false;
+            }
+            if (queryType === "image" && !imageQuery) {
+                alert("Please upload an image.");
+                return false;
+            }
+            if (queryType === "hybrid" && (!textQuery || !imageQuery)) {
+                alert("Please provide both a text query and an image for hybrid search.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
